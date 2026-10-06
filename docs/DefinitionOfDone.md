@@ -7,8 +7,8 @@ Mark each item only when its evidence is available.
 - [x] Shapes belonging to another task are excluded. Evidence: Scoped in query via `job__segment__task=task`. Tested with task boundary isolation.
 - [x] An unauthenticated request is refused. Evidence: Returns `401 Unauthorized` (`{"detail":"Authentication credentials were not provided."}`).
 - [x] An authenticated user without task access is refused. Evidence: Returns `403 Forbidden` (`{"detail":"You do not have permission to perform this action."}`) for a temporary, unprivileged verification account.
-- [x] The task analytics page renders a bar chart from the endpoint. Evidence: Verified on `http://localhost:8080/tasks/1/analytics` with Chart.js bar chart.
-- [x] The task analytics page has verified empty and failed-request states. Evidence: Clean empty state rendered via Ant Design `<Empty>` when 0 configured labels; error state rendered via `<Alert>` with Retry button.
+- [ ] The task analytics page renders a bar chart from the endpoint. Pending: rebuild the frontend, then verify `http://localhost:8080/tasks/2/analytics` with the imported COCO task.
+- [ ] The task analytics page has verified empty and failed-request states. Pending: browser verification after the frontend rebuild; implementation uses Ant Design `<Empty>` and `<Alert>` with Retry.
 - [x] Five endpoint timings, the median, and the spread are recorded. Evidence: Recorded in `docs/Objectives.md`: Runs [154.42, 150.83, 205.75, 179.30, 172.98] ms, median 172.98 ms, spread 54.92 ms.
 - [x] The performance target is marked met or missed with the reason. Evidence: Target <= 200 ms marked met using the browser-equivalent session-authenticated request path; repeated HTTP Basic authentication is excluded because password hashing dominates its timing.
 - [x] One grouping/filter beyond a plain count is available. Evidence: `source` filters shapes by `auto`, `semi-auto`, `manual`, `file`, or `consensus`; the task analytics page exposes the filter.

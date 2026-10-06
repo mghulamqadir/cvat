@@ -2,65 +2,75 @@
 #
 # SPDX-License-Identifier: MIT
 
-from types import SimpleNamespace
-from unittest import TestCase, mock
+from unittest import mock
 
-from cvat.apps.engine.models import SourceType
-from cvat.apps.engine.permissions import TaskPermission
-from cvat.apps.test.views import TaskAnnotationAnalyticsViewSet
+from rest_framework import status
+from rest_framework.test import APITestCase
+
+from cvat.apps.engine.models import Job, Label, LabeledShape, Segment, SourceType, Task
+from cvat.apps.iam.models import User
+from cvat.apps.iam.permissions import PolicyEnforcer
 
 
-class TestTaskAnnotationAnalyticsViewSet(TestCase):
-    def test_returns_counts_and_zero_count_labels(self):
-        task = mock.Mock(id=12, project_id=None)
-        labels = [
-            SimpleNamespace(id=1, name="car"),
-            SimpleNamespace(id=2, name="person"),
-        ]
-        view = TaskAnnotationAnalyticsViewSet()
-        view.get_object = mock.Mock(return_value=task)
-
-        with (
-            mock.patch("cvat.apps.test.views.LabeledShape.objects") as objects,
-            mock.patch("cvat.apps.test.views.Label.objects") as labels_objects,
+class TaskAnnotationAnalyticsAPITestCase(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="analytics-owner", password="password")
+        self.outsider = User.objects.create_user(username="analytics-outsider", password="password")
+        self.task = Task.objects.create(name="analytics task", owner=self.owner)
+        self.other_task = Task.objects.create(name="other analytics task", owner=self.owner)
+        self.car = Label.objects.create(task=self.task, name="car")
+        self.person = Label.objects.create(task=self.task, name="person")
+        Label.objects.create(task=self.task, name="empty")
+        other_label = Label.objects.create(task=self.other_task, name="other")
+        job = Job.objects.create(segment=Segment.objects.create(task=self.task, start_frame=0, stop_frame=0))
+        other_job = Job.objects.create(segment=Segment.objects.create(task=self.other_task, start_frame=0, stop_frame=0))
+        for job_, label, source in (
+            (job, self.car, SourceType.FILE),
+            (job, self.person, SourceType.MANUAL),
+            (other_job, other_label, SourceType.FILE),
         ):
-            objects.filter.return_value.values.return_value.annotate.return_value = [
-                {"label_id": 2, "count": 3},
-            ]
-            labels_objects.filter.return_value.order_by.return_value = labels
+            LabeledShape.objects.create(
+                job=job_, label=label, frame=0, type="rectangle", points=[0, 0, 1, 1], source=source,
+            )
 
-            response = view.retrieve(mock.Mock(query_params={}))
+    @staticmethod
+    def _allow_task_owner(_, request, __, task):
+        return request.user == task.owner
 
-        objects.filter.assert_called_once_with(job__segment__task=task)
-        self.assertEqual(
-            response.data,
-            {
-                "task_id": 12,
-                "source": None,
-                "classes": [
-                    {"label": "car", "count": 0},
-                    {"label": "person", "count": 3},
-                ],
-            },
-        )
+    def _get_as_owner(self, **query):
+        self.client.force_login(self.owner)
+        with mock.patch.object(PolicyEnforcer, "has_object_permission", self._allow_task_owner):
+            return self.client.get(f"/api/test/tasks/{self.task.id}/annotation-analytics", query)
 
-    def test_filters_shapes_by_source(self):
-        task = mock.Mock(id=12, project_id=None)
-        view = TaskAnnotationAnalyticsViewSet()
-        view.get_object = mock.Mock(return_value=task)
+    def test_returns_database_counts_zeroes_and_excludes_other_tasks(self):
+        response = self._get_as_owner()
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        self.assertEqual(response.data, {
+            "task_id": self.task.id,
+            "source": None,
+            "classes": [
+                {"label": "car", "count": 1},
+                {"label": "empty", "count": 0},
+                {"label": "person", "count": 1},
+            ],
+        })
 
-        with (
-            mock.patch("cvat.apps.test.views.LabeledShape.objects") as objects,
-            mock.patch("cvat.apps.test.views.Label.objects") as labels_objects,
-        ):
-            objects.filter.return_value.filter.return_value.values.return_value.annotate.return_value = []
-            labels_objects.filter.return_value.order_by.return_value = []
+    def test_filters_counts_by_source(self):
+        response = self._get_as_owner(source=SourceType.FILE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        self.assertEqual(response.data["source"], SourceType.FILE)
+        self.assertEqual(response.data["classes"], [
+            {"label": "car", "count": 1},
+            {"label": "empty", "count": 0},
+            {"label": "person", "count": 0},
+        ])
 
-            response = view.retrieve(mock.Mock(query_params={"source": SourceType.MANUAL}))
+    def test_rejects_anonymous_request(self):
+        response = self.client.get(f"/api/test/tasks/{self.task.id}/annotation-analytics")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        objects.filter.assert_called_once_with(job__segment__task=task)
-        objects.filter.return_value.filter.assert_called_once_with(source=SourceType.MANUAL)
-        self.assertEqual(response.data["source"], SourceType.MANUAL)
-
-    def test_uses_cvat_task_permission(self):
-        self.assertIs(TaskAnnotationAnalyticsViewSet.iam_permission_class, TaskPermission)
+    def test_rejects_user_without_task_access(self):
+        self.client.force_login(self.outsider)
+        with mock.patch.object(PolicyEnforcer, "has_object_permission", self._allow_task_owner):
+            response = self.client.get(f"/api/test/tasks/{self.task.id}/annotation-analytics")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
