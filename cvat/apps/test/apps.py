@@ -1,0 +1,9 @@
+# Copyright (C) 2026 xis.ai
+#
+# SPDX-License-Identifier: MIT
+
+from django.apps import AppConfig
+
+
+class TestConfig(AppConfig):
+    name = "cvat.apps.test"
