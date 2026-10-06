@@ -52,6 +52,15 @@ export interface SerializedUserGrowthData {
     promotion_notifications_allowed: boolean;
 }
 
+export interface SerializedAnnotationAnalytics {
+    task_id: number;
+    source: string | null;
+    classes: Array<{
+        label: string;
+        count: number;
+    }>;
+}
+
 interface SerializedStorage {
     id: number;
     location: StorageLocation;

@@ -174,6 +174,11 @@ export default interface CVATCore {
         };
     }
     analytics: {
+        annotationCounts: (filter: { taskID: number; source?: string }) => Promise<{
+            taskID: number;
+            source: string | null;
+            classes: Array<{ label: string; count: number }>;
+        }>;
         quality: {
             reports: (filter: QualityReportsFilter, aggregate?: boolean) => Promise<PaginatedResource<QualityReport>>;
             conflicts: (filter: QualityConflictsFilter) => Promise<QualityConflict[]>;
