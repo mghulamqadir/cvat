@@ -21,11 +21,13 @@ Complete these fields after the sample task and endpoint exist.
 | Operating system | Windows 11 Pro (Build 26300) / Docker Desktop (Linux containers) |
 | CVAT commit SHA | `d8193c584be9ce6cf9882dad06c0dd920cc0b9c5` |
 | COCO images imported | 100 images (from COCO 2017 validation set) |
-| Task ID | 1 |
-| Run 1 | 185.19 ms |
-| Run 2 | 172.65 ms |
-| Run 3 | 194.95 ms |
-| Run 4 | 214.47 ms |
-| Run 5 | 220.60 ms |
-| Median | 194.95 ms (Target Met: <= 200 ms) |
-| Minimum / maximum | 172.65 ms / 220.60 ms (Spread: 47.95 ms) |
+| Task ID | 2 |
+| Run 1 | 2166.16 ms |
+| Run 2 | 2058.76 ms |
+| Run 3 | 2734.10 ms |
+| Run 4 | 2946.36 ms |
+| Run 5 | 3464.47 ms |
+| Median | 2734.10 ms (Target missed: > 200 ms) |
+| Minimum / maximum | 2058.76 ms / 3464.47 ms (Spread: 1405.71 ms) |
+
+Raw output was captured with five authenticated `Invoke-WebRequest` calls from Windows PowerShell to the local Docker-backed CVAT service. The target was missed in this environment; the endpoint query itself needs profiling before a performance claim can be made.

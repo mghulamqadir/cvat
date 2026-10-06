@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import Alert from 'antd/lib/alert';
 import Button from 'antd/lib/button';
 import Empty from 'antd/lib/empty';
+import Select from 'antd/lib/select';
 import Spin from 'antd/lib/spin';
 import Chart from 'chart.js/auto';
 
@@ -22,11 +23,13 @@ interface Props {
 }
 
 const core = getCore();
+const ANNOTATION_SOURCES = ['auto', 'semi-auto', 'manual', 'file', 'consensus'];
 
 function TaskAnnotationAnalytics({ task }: { task: Task }): JSX.Element {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
     const [classes, setClasses] = useState<Array<{ label: string; count: number }> | null>(null);
+    const [source, setSource] = useState<string | undefined>();
     const [error, setError] = useState<Error | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -34,14 +37,14 @@ function TaskAnnotationAnalytics({ task }: { task: Task }): JSX.Element {
         try {
             setLoading(true);
             setError(null);
-            const analytics = await core.analytics.annotationCounts({ taskID: task.id });
+            const analytics = await core.analytics.annotationCounts({ taskID: task.id, source });
             setClasses(analytics.classes);
         } catch (requestError: unknown) {
             setError(requestError instanceof Error ? requestError : new Error('Unable to load annotation analytics'));
         } finally {
             setLoading(false);
         }
-    }, [task.id]);
+    }, [task.id, source]);
 
     useEffect(() => {
         load();
@@ -107,7 +110,24 @@ function TaskAnnotationAnalytics({ task }: { task: Task }): JSX.Element {
         return <Empty description='This task has no configured labels' />;
     }
 
-    return <canvas ref={canvasRef} aria-label='Annotation counts by class' role='img' />;
+    return (
+        <>
+            <Select
+                allowClear
+                placeholder='All annotation sources'
+                value={source}
+                onChange={setSource}
+                style={{ marginBottom: 16, minWidth: 220 }}
+            >
+                {ANNOTATION_SOURCES.map((annotationSource) => (
+                    <Select.Option key={annotationSource} value={annotationSource}>
+                        {annotationSource}
+                    </Select.Option>
+                ))}
+            </Select>
+            <canvas ref={canvasRef} aria-label='Annotation counts by class' role='img' />
+        </>
+    );
 }
 
 function AnalyticsReportContent({ resource }: Props): JSX.Element {

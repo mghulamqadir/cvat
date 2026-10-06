@@ -2733,12 +2733,16 @@ async function getQualityReports(
     return response.data.results;
 }
 
-async function getTaskAnnotationAnalytics(taskID: number): Promise<SerializedAnnotationAnalytics> {
+async function getTaskAnnotationAnalytics(
+    taskID: number,
+    source?: string,
+): Promise<SerializedAnnotationAnalytics> {
     const { backendAPI } = config;
 
     try {
         const response = await Axios.get<SerializedAnnotationAnalytics>(
             `${backendAPI}/test/tasks/${taskID}/annotation-analytics`,
+            { params: source ? { source } : undefined },
         );
         return response.data;
     } catch (errorData) {

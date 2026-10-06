@@ -54,6 +54,7 @@ export interface SerializedUserGrowthData {
 
 export interface SerializedAnnotationAnalytics {
     task_id: number;
+    source: string | null;
     classes: Array<{
         label: string;
         count: number;

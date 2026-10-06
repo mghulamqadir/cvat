@@ -174,8 +174,9 @@ export default interface CVATCore {
         };
     }
     analytics: {
-        annotationCounts: (filter: { taskID: number }) => Promise<{
+        annotationCounts: (filter: { taskID: number; source?: string }) => Promise<{
             taskID: number;
+            source: string | null;
             classes: Array<{ label: string; count: number }>;
         }>;
         quality: {

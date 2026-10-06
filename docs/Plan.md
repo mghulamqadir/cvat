@@ -23,13 +23,13 @@ Planned work is approximately seven hours; the remaining time is reserved for se
 
 ## Approach
 
-The endpoint will be `GET /api/test/tasks/{task_id}/annotation-analytics`. It will reuse CVAT authentication and `TaskPermission`, count `LabeledShape` records through `shape.job -> job.segment -> task`, and return every configured task label with its count, including zeroes. Results will be sorted by label name.
+The endpoint will be `GET /api/test/tasks/{task_id}/annotation-analytics`. It will reuse CVAT authentication and `TaskPermission`, count `LabeledShape` records through `shape.job -> job.segment -> task`, and return every configured task or project label, including sublabels and zeroes. Results will be sorted by label name. An optional `source` query parameter provides the selected grouping/filter beyond the plain count.
 
 The existing `/tasks/:tid/analytics` page and task-menu link will be reused. Its default paid-feature placeholder will be replaced with a Chart.js bar chart that calls the typed CVAT core client method. A task with no configured labels will show an empty state; a failed request will show an error state with retry.
 
 ## Deferred work
 
-The optional filter/grouping and WebSocket live updates/recovery will not begin until the endpoint, graph, empty/error states, authorization checks, and performance measurement are complete. Any unfinished work will be documented honestly.
+WebSocket live updates and reconnection recovery are deferred. The current CVAT ASGI application has no WebSocket routing or Django Channels dependency; implementing this safely requires an infrastructure change rather than a page-only change. Any unfinished work is documented honestly.
 
 ## Git sequence
 
