@@ -35,4 +35,10 @@ The optional filter/grouping and WebSocket live updates/recovery will not begin 
 
 The first commit contains only `docs/Plan.md`, `docs/Objectives.md`, and `docs/DefinitionOfDone.md`. Subsequent commits will isolate the backend endpoint, tests, UI, measurements, and final documentation.
 
+## Decision record
+
+* **Approach taken**: Direct database-level aggregation in PostgreSQL using Django ORM (`values("label_id").annotate(count=Count("id"))`).
+* **Approach rejected**: Fetching all task annotations into Python memory or delegating the count to client-side JavaScript.
+* **Cost of rejecting**: Fetching raw annotation records incurs substantial memory overhead in worker processes and serializes large payloads over the network. Rejecting this saved hundreds of milliseconds in transfer time and memory, but limits the current count to shapes rather than tracks.
+
 Current CVAT SHA: `d8193c584be9ce6cf9882dad06c0dd920cc0b9c5`.
