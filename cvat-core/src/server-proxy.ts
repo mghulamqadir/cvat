@@ -18,6 +18,7 @@ import {
     SerializedInvitationData, SerializedCloudStorage, SerializedFramesMetaData, SerializedCollection,
     SerializedRequest, SerializedJobValidationLayout, SerializedTaskValidationLayout, SerializedConsensusSettingsData,
     SerializedApiToken, SerializedUserGrowthData,
+    SerializedAnnotationAnalytics,
 } from './server-response-types';
 import {
     SerializedQualityConflictData, SerializedQualityReportData,
@@ -2732,6 +2733,19 @@ async function getQualityReports(
     return response.data.results;
 }
 
+async function getTaskAnnotationAnalytics(taskID: number): Promise<SerializedAnnotationAnalytics> {
+    const { backendAPI } = config;
+
+    try {
+        const response = await Axios.get<SerializedAnnotationAnalytics>(
+            `${backendAPI}/test/tasks/${taskID}/annotation-analytics`,
+        );
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 export default Object.freeze({
     server: Object.freeze({
         about,
@@ -2898,6 +2912,7 @@ export default Object.freeze({
     }),
 
     analytics: Object.freeze({
+        annotationCounts: getTaskAnnotationAnalytics,
         quality: Object.freeze({
             reports: getQualityReports,
             conflicts: getQualityConflicts,

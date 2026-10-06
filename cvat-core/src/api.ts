@@ -418,6 +418,10 @@ function build(): CVATCore {
             },
         },
         analytics: {
+            async annotationCounts(filter: { taskID: number }) {
+                const result = await PluginRegistry.apiWrapper(cvat.analytics.annotationCounts, filter);
+                return result;
+            },
             events: {
                 async export(filter = {}) {
                     const result = await PluginRegistry.apiWrapper(cvat.analytics.events.export, filter);

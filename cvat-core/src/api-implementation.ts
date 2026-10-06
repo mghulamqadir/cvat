@@ -469,6 +469,15 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
         );
         return reports;
     });
+    implementationMixin(cvat.analytics.annotationCounts, async ({ taskID }) => {
+        checkFilter({ taskID }, { taskID: isInteger });
+
+        const analytics = await serverProxy.analytics.annotationCounts(taskID);
+        return {
+            taskID: analytics.task_id,
+            classes: analytics.classes,
+        };
+    });
     implementationMixin(cvat.analytics.quality.conflicts, async (filter: QualityConflictsFilter) => {
         checkFilter(filter, {
             reportID: isInteger,
