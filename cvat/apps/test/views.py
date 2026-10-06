@@ -15,6 +15,7 @@ class TaskAnnotationAnalyticsViewSet(mixins.RetrieveModelMixin, viewsets.Generic
 
     queryset = Task.objects
     iam_permission_class = TaskPermission
+    filter_backends = []
 
     def retrieve(self, request, *args, **kwargs):
         task = self.get_object()
