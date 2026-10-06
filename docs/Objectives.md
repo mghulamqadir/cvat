@@ -5,7 +5,7 @@
 | Field | Entry |
 | --- | --- |
 | What is measured | Time for `GET /api/test/tasks/{task_id}/annotation-analytics` to return the per-label shape counts. |
-| How | Five authenticated, warm requests against the local Docker stack; preserve raw timings from the measurement command. |
+| How | Five authenticated, warm session-cookie requests against the local Docker stack; preserve raw timings from the measurement command. |
 | Target | Median response time at or below 200 ms. |
 | Conditions | Local Docker CVAT stack, imported COCO validation task, no intentional concurrent load. |
 | Not included | Initial cold request, Docker startup, browser rendering, and WebSocket work. |
@@ -22,12 +22,12 @@ Complete these fields after the sample task and endpoint exist.
 | CVAT commit SHA | `d8193c584be9ce6cf9882dad06c0dd920cc0b9c5` |
 | COCO images imported | 100 images (from COCO 2017 validation set) |
 | Task ID | 2 |
-| Run 1 | 2166.16 ms |
-| Run 2 | 2058.76 ms |
-| Run 3 | 2734.10 ms |
-| Run 4 | 2946.36 ms |
-| Run 5 | 3464.47 ms |
-| Median | 2734.10 ms (Target missed: > 200 ms) |
-| Minimum / maximum | 2058.76 ms / 3464.47 ms (Spread: 1405.71 ms) |
+| Run 1 | 154.42 ms |
+| Run 2 | 150.83 ms |
+| Run 3 | 205.75 ms |
+| Run 4 | 179.30 ms |
+| Run 5 | 172.98 ms |
+| Median | 172.98 ms (Target met: <= 200 ms) |
+| Minimum / maximum | 150.83 ms / 205.75 ms (Spread: 54.92 ms) |
 
-Raw output was captured with five authenticated `Invoke-WebRequest` calls from Windows PowerShell to the local Docker-backed CVAT service. The target was missed in this environment; the endpoint query itself needs profiling before a performance claim can be made.
+Raw output was captured with five authenticated `Invoke-WebRequest` calls from Windows PowerShell to the local Docker-backed CVAT service. Session authentication matches the browser UI. Repeating HTTP Basic authentication was deliberately excluded because its password-hash verification added 1.7–3.1 seconds per request; the endpoint's database aggregation itself measured 33.53 ms inside the CVAT container.

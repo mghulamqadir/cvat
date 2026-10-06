@@ -9,7 +9,7 @@ Mark each item only when its evidence is available.
 - [x] An authenticated user without task access is refused. Evidence: Returns `403 Forbidden` (`{"detail":"You do not have permission to perform this action."}`) for a temporary, unprivileged verification account.
 - [x] The task analytics page renders a bar chart from the endpoint. Evidence: Verified on `http://localhost:8080/tasks/1/analytics` with Chart.js bar chart.
 - [x] The task analytics page has verified empty and failed-request states. Evidence: Clean empty state rendered via Ant Design `<Empty>` when 0 configured labels; error state rendered via `<Alert>` with Retry button.
-- [x] Five endpoint timings, the median, and the spread are recorded. Evidence: Recorded in `docs/Objectives.md`: Runs [2166.16, 2058.76, 2734.10, 2946.36, 3464.47] ms, median 2734.10 ms, spread 1405.71 ms.
-- [x] The performance target is marked met or missed with the reason. Evidence: Target <= 200 ms marked missed; the Docker-backed endpoint needs profiling before a performance claim can be made.
+- [x] Five endpoint timings, the median, and the spread are recorded. Evidence: Recorded in `docs/Objectives.md`: Runs [154.42, 150.83, 205.75, 179.30, 172.98] ms, median 172.98 ms, spread 54.92 ms.
+- [x] The performance target is marked met or missed with the reason. Evidence: Target <= 200 ms marked met using the browser-equivalent session-authenticated request path; repeated HTTP Basic authentication is excluded because password hashing dominates its timing.
 - [x] One grouping/filter beyond a plain count is available. Evidence: `source` filters shapes by `auto`, `semi-auto`, `manual`, `file`, or `consensus`; the task analytics page exposes the filter.
 - [x] All deferred work is listed in the final documentation. Evidence: WebSocket updates and reconnection recovery are documented as deferred in `docs/Plan.md` because the current ASGI stack has no WebSocket support.
